@@ -25,9 +25,7 @@ app.use(bodyParser.json())
 
 // Handle / route
 app.use('/', (request, response ) => {
-  console.log('test')
-  //console.log(request)
-  console.log(response.body)
+    
   bot.reply(request, response)
     .then(success => {
       console.log(success)

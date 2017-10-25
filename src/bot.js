@@ -21,28 +21,67 @@ const client = new recastai(process.env.REQUEST_TOKEN)
  * Parameters:
  * - message: Message received from BotConnector
  */
+
+const moviesDb = [{
+  name: 'speed',
+  year: '1982',
+  description: 'peed is a 1994 American action thriller film directed by Jan de Bont in his feature film directorial debut. The film stars Keanu Reeves, Dennis Hopper, Sandra Bullock'
+},
+{
+  name: 'titanic',
+  year: '1997',
+  description: 'Titanic is a 1997 American epic romance-disaster film directed, written, co-produced and co-edited by James Cameron. A fictionalized account of the sinking of the RMS Titanic'
+},
+{
+  name: 'terminator',
+  year: '1990',
+  description: 'The Terminator is a 1984 American science-fiction action film directed by James Cameron. It stars Arnold Schwarzenegger as the Terminator were instrumental in the film\'s financing and production. '
+},
+{
+  name: 'matrix',
+  year: '1995',
+  description: 'The Matrix is a science fiction action media franchise created by The Wachowskis, about heroes who fight a desperate war against machine overlords that have enslaved humanity in an extreme '
+}
+]
+
+const printMovie = function (theMovie) {
+  return `This movie was released in ${theMovie.year}. ${theMovie.description}`
+}
+
 const replyMessage = message => {
-  console.log('mess content' + message.content)
-  // Get text from message received
+
   const text = message.content
   console.log('I receive: ', text)
 
   return client.request.analyseText(text)
     .then(nlp => {
-      let reply = 'I\'m sorry but I don\'t understand what you are talking about.'
+      let reply = 'I\'m sorry but I don\'t understand what you are talking about.'      
       const intent = nlp.intent()
-      console.log(nlp.entities)
-      var movie = nlp.entities.movie;
-      if (movie) {
-        console.log(movie[0].value)
-        if (movie[0].value === "star wars") {
-          reply = "Start Wars description extended"
-        }
+      var movie = nlp.entities.movie;      
+      if (!intent) {
+        reply = "Please clearify your question"
+        message.addReply({ type: 'text', content: reply })
+        return message.reply().then(p => p.body)
+      } else {
+        console.log(intent.confidence)
       }
-      // if (intent) {
-      //   reply = `I understand sfsfsfsdf that you talk about ${intent.slug}.`
-      // }
+      if (movie && movie.length != 0) {
 
+        const theMovie = moviesDb.find((x, index) => {
+          return x.name == movie[0].value;
+        })
+        
+        if (theMovie) {
+          reply = printMovie(theMovie)
+        } else {
+          let allMoviesList = "Please, select a movie from a list. "
+          moviesDb.map((x) => allMoviesList += printMovie(x))
+          reply = allMoviesList
+        }
+      } else {
+        reply = `I understand that you talk about ${intent.slug}.`
+      }
+      
       message.addReply({ type: 'text', content: reply })
 
       return message.reply().then(p => p.body)
